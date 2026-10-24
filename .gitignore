@@ -15,7 +15,16 @@ __pycache__/
 env/
 venv/
 .venv/
+.venv-olympiq/
+.venv-olympiq312/
 ENV/
+
+# JavaScript frontend dependencies and generated builds
+node_modules/
+dist/
+.tanstack/
+.output/
+.wrangler/
 
 # Streamlit
 .streamlit/

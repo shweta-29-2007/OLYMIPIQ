@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const rings = ["border-ring-blue", "border-ring-yellow", "border-ring-black", "border-ring-green", "border-ring-red"];
+const accentDots = ["bg-ring-blue", "bg-ring-yellow", "bg-ring-black", "bg-ring-green", "bg-ring-red"];
 
 const stats = [
   { n: "271K", l: "Athlete-event records" },
@@ -30,15 +30,15 @@ const features = [
   { k: "01", t: "Medal Tables", d: "Event-aware counting — a team gold counts once, not once per athlete.", c: "bg-ring-blue" },
   { k: "02", t: "Country Trajectories", d: "Every nation's rise and fall across editions, zero-medal years included.", c: "bg-ring-yellow" },
   { k: "03", t: "Breakthrough Watch", d: "Spot nations whose recent medal slope is climbing fastest.", c: "bg-ring-black" },
-  { k: "04", t: "Sport Opportunity", d: "Find the sports where a country could win more podiums.", c: "bg-ring-green" },
-  { k: "05", t: "Medal Forecast", d: "Random Forest vs. persistence baseline, backtested chronologically.", c: "bg-ring-red" },
+  { k: "04", t: "Sport Opportunity", d: "Explore sports with historical results or room for further investigation.", c: "bg-ring-green" },
+  { k: "05", t: "Medal Forecast", d: "A two-stage model compared with a persistence baseline and backtested chronologically.", c: "bg-ring-red" },
 ];
 
 function Rings({ size = "h-6 w-6" }: { size?: string }) {
   return (
-    <div className="flex -space-x-1.5">
-      {rings.map((r) => (
-        <span key={r} className={`${size} rounded-full border-2 ${r}`} />
+    <div className="flex gap-1" aria-label="OLYMPIQ color marks">
+      {accentDots.map((color) => (
+        <span key={color} className={`${size} rounded-full ${color}`} />
       ))}
     </div>
   );
@@ -70,7 +70,7 @@ function Index() {
             Explore 120 years of Olympic results — medal tables, rising nations and data-driven forecasts in one dashboard.
           </p>
           <div className="animate-rise mt-10 flex flex-wrap gap-4" style={{ animationDelay: "0.3s" }}>
-            <a href={DASHBOARD_URL} className="bg-gold rounded-sm px-8 py-4 font-display text-xl tracking-widest text-primary-foreground transition-transform hover:-translate-y-0.5">
+            <a href={DASHBOARD_URL} target="_blank" rel="noreferrer" className="bg-gold rounded-sm px-8 py-4 font-display text-xl tracking-widest text-primary-foreground transition-transform hover:-translate-y-0.5">
               Launch Dashboard →
             </a>
             <a href="#features" className="rounded-sm border border-border px-8 py-4 font-display text-xl tracking-widest hover:border-primary hover:text-primary">

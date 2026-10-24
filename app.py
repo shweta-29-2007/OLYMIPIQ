@@ -44,48 +44,53 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-NAVY = "#0a0e27"
-PANEL = "#111827"
-GOLD = "#fbbf24"
-BLUE = "#60a5fa"
-SILVER = "#d1d5db"
-BRONZE = "#b45309"
+NAVY = "#07111f"
+PANEL = "#101e32"
+GOLD = "#f6c453"
+BLUE = "#46d9e8"
+SILVER = "#cbd5e1"
+BRONZE = "#f28b50"
+MINT = "#56e3b4"
 
 st.markdown(
     f"""
     <style>
-        .stApp {{ background: linear-gradient(180deg, {NAVY} 0%, #070a1a 100%); }}
+        .stApp {{ background: radial-gradient(ellipse at 82% 0%, #14294a 0%, transparent 34%), linear-gradient(180deg, {NAVY} 0%, #070a1a 100%); }}
         [data-testid="stSidebar"] {{
             background: #0d1226;
-            border-right: 1px solid #1e3a8a;
+            border-right: 1px solid #25435f;
         }}
         h1, h2, h3 {{ color: {GOLD}; letter-spacing: 0.3px; }}
         h4, h5, h6 {{ color: {BLUE}; }}
         p, li, label, span {{ color: #e5e7eb; }}
         .hero {{
             padding: 1.4rem 1.8rem;
-            border: 1px solid #1e3a8a;
+            border: 1px solid #315275;
             border-radius: 16px;
-            background: radial-gradient(circle at top left, #15204a 0%, #0b1024 70%);
+            background: radial-gradient(circle at 85% 10%, #19404b 0%, transparent 38%), radial-gradient(circle at top left, #1b2f59 0%, #0b1024 72%);
             margin-bottom: 1rem;
+            box-shadow: 0 18px 50px rgba(0,0,0,.18);
         }}
         .hero h1 {{ margin: 0; font-size: 2.7rem; }}
         .hero p {{ margin: 0.35rem 0 0 0; color: #c7d2fe; }}
         .card {{
             background: {PANEL};
-            border: 1px solid #1f2a4a;
+            border: 1px solid #263d59;
             border-radius: 14px;
             padding: 1rem 1.1rem;
             margin-bottom: 0.8rem;
         }}
         div[data-testid="stMetric"] {{
             background: {PANEL};
-            border: 1px solid #1f2a4a;
+            border: 1px solid #263d59;
             border-radius: 12px;
             padding: 0.8rem 1rem;
         }}
         div[data-testid="stMetricLabel"] p {{ color: #93a4c3 !important; }}
         div[data-testid="stMetricValue"] {{ color: {GOLD} !important; }}
+        div[data-testid="stMetric"]:hover {{ border-color: {BLUE}; transition: border-color .2s ease; }}
+        .eyebrow {{ color: {MINT}; text-transform: uppercase; letter-spacing: .16em; font-weight: 700; font-size: .78rem; }}
+        .hero h1 {{ background: linear-gradient(90deg, #fff0bd, {GOLD} 48%, {BLUE}); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }}
         .stDataFrame {{ border: 1px solid #1f2a4a; border-radius: 10px; }}
         .note {{
             border-left: 4px solid {GOLD};
@@ -218,6 +223,84 @@ def medal_breakdown_chart(frame: pd.DataFrame, label_col: str, title: str) -> go
 # ---------------------------------------------------------------------------
 # Pages
 # ---------------------------------------------------------------------------
+
+def page_welcome(df: pd.DataFrame, analyzer: OlympicAnalyzer) -> None:
+    """Friendly first screen with verified dataset facts and a country spotlight."""
+    info = analyzer.get_dataset_explanation()["stats"]
+    latest_summer = int(df.loc[df["season"] == "Summer", "year"].max())
+    india_row = analyzer.country_medals.loc[
+        (analyzer.country_medals["noc"] == "IND")
+        & (analyzer.country_medals["season"] == "Summer")
+        & (analyzer.country_medals["year"] == latest_summer)
+    ]
+
+    st.markdown(
+        """
+        <div class="hero">
+          <div class="eyebrow">A data driven journey through Olympic history</div>
+          <h1>OLYMPIQ</h1>
+          <p>Explore the moments, nations and sports behind more than a century of Olympic competition.</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    metric_row([
+        ("Athlete event records", f"{info['total_rows']:,}"),
+        ("Nations / NOCs", f"{info['unique_countries']}"),
+        ("Sports", f"{info['unique_sports']}"),
+        ("Coverage", f"{info['years'][0]}–{info['years'][1]}"),
+    ])
+
+    left, right = st.columns([1.45, 1])
+    with left:
+        st.markdown("### From the archive to the next Games")
+        st.write(
+            "Use interactive charts to compare medal histories, follow a country's trajectory, "
+            "explore sport-specific strengths, and examine a transparent forecast. Each insight "
+            "is calculated from the historical file included with this project."
+        )
+        st.markdown(
+            """
+            <div class="card"><h4>📚 Explore the past</h4>
+            Filter by season, edition, country, sport and medal colour. Team event awards are
+            counted once per country and event.</div>
+            <div class="card"><h4>🧭 Find a story</h4>
+            Compare country trajectories, historical breakthroughs and sport opportunity scores.
+            These describe past results; they do not promise future medals.</div>
+            <div class="card"><h4>🔭 Look ahead carefully</h4>
+            Predictions use previous editions only, are tested chronologically, and are shown
+            alongside a simple baseline and uncertainty range.</div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with right:
+        st.markdown("### 🇮🇳 India spotlight")
+        if not india_row.empty:
+            row = india_row.iloc[0]
+            st.caption(f"Verified historical Summer Games result · {latest_summer}")
+            metric_row([
+                ("Total medals", f"{int(row['total'])}"),
+                ("Gold", f"{int(row['gold'])}"),
+            ])
+            metric_row([
+                ("Silver", f"{int(row['silver'])}"),
+                ("Bronze", f"{int(row['bronze'])}"),
+            ])
+        else:
+            st.info("India (IND) is not present in the selected dataset edition.")
+        st.caption(
+            f"The included source ends in {info['years'][1]}. These are archived results, "
+            "not live Olympic data."
+        )
+        st.markdown("### Pick a starting point")
+        st.markdown("**Historical Trends** for changes over time · **Country Analysis** for rankings · **Predictive Analytics** for model estimates")
+
+    st.markdown(
+        """<div class="warn"><b>Forecasts are estimates.</b> The archive ends in 2016, """
+        """so predictions for later editions are model outputs, not official or live results. """
+        """Historical associations do not establish causes.</div>""",
+        unsafe_allow_html=True,
+    )
 
 def page_overview(df: pd.DataFrame, analyzer: OlympicAnalyzer) -> None:
     st.markdown(
@@ -475,7 +558,7 @@ def page_trajectory(df: pd.DataFrame, analyzer: OlympicAnalyzer) -> None:
     col1, col2 = st.columns([2, 1])
     with col1:
         countries = sorted(df["noc"].dropna().unique().tolist())
-        default_index = countries.index("USA") if "USA" in countries else 0
+        default_index = countries.index("IND") if "IND" in countries else (countries.index("USA") if "USA" in countries else 0)
         noc = st.selectbox("Country (NOC)", countries, index=default_index, key="traj_noc")
     with col2:
         season = season_select("traj_season")
@@ -606,7 +689,7 @@ def page_sport_opportunity(df: pd.DataFrame, analyzer: OlympicAnalyzer) -> None:
     st.caption("Sports where a country has relative historical strength — or little history to build on.")
 
     countries = sorted(df["noc"].dropna().unique().tolist())
-    default_index = countries.index("USA") if "USA" in countries else 0
+    default_index = countries.index("IND") if "IND" in countries else (countries.index("USA") if "USA" in countries else 0)
     noc = st.selectbox("Country (NOC)", countries, index=default_index, key="opp_noc")
     opportunities = analyzer.get_sport_opportunity_explorer(noc, top_n=15)
 
@@ -1023,6 +1106,7 @@ def main() -> None:
     page = st.sidebar.radio(
         "Navigate",
         [
+            "Welcome",
             "Overview",
             "Historical Trends",
             "Country Analysis",
@@ -1079,7 +1163,9 @@ def main() -> None:
         show_error_box(exc)
         st.stop()
 
-    if page == "Overview":
+    if page == "Welcome":
+        page_welcome(df, analyzer)
+    elif page == "Overview":
         page_overview(df, analyzer)
     elif page == "Historical Trends":
         page_historical_trends(df, analyzer)

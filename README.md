@@ -1,92 +1,65 @@
-# OLYMPIQ - Olympic Data Analytics and Predictive Visualization
+# OLYMPIQ — Olympic history and forecasting
 
-OLYMPIQ is a professional, interactive Streamlit dashboard for exploring historical Olympic data and generating transparent, defensible medal forecasts.
+OLYMPIQ is a Streamlit dashboard for exploring authentic historical Olympic athlete and event results, comparing countries and sports, and reviewing cautious country-level medal estimates.
 
-## Features
+## Run it on Windows
 
-- **Historical Trends**: Explore medal counts by year, season (Summer/Winter), country, sport, and medal type
-- **Country & Sport Analysis**: Compare performances across countries and sports with interactive Plotly charts
-- **Performance Trajectory**: Track how a country's medal performance evolves across Olympic editions
-- **Breakthrough Watch**: Identify countries showing improving trends (without guaranteeing future medals)
-- **Sport Opportunity Explorer**: Discover sports where a country has historically performed relatively well
-- **Predictive Analytics**: Transparent medal forecasts using chronological validation (train on past, test on future)
-- **Prediction vs Actual**: Backtesting view showing model performance against known results
-- **Uncertainty & Transparency**: Clear explanations of methodology, limitations, and confidence
+Install Python 3.12 (and its `py` launcher) if it is not already installed. Open this repository folder in VS Code. In **Terminal → New Terminal**, run:
 
-## Data Source
-
-This app uses the [TidyTuesday Olympics dataset](https://github.com/rfordatascience/tidytuesday/tree/master/data/2021/2021-07-27) (Kaggle "120 years of Olympic history: athletes and results"), which contains authentic historical Olympic data from Athens 1896 to Rio 2016.
-
-**Note**: This dataset ends at 2016. Predictions for future Games (e.g., 2020, 2024, 2028) are extrapolations based on historical trends and must be interpreted as estimates, not guarantees.
-
-## Installation & Setup
-
-### Prerequisites
-- Python 3.8+ (tested with Python 3.14)
-- pip
-
-### Steps
-
-1. **Clone or navigate to the project directory**
-```bash
-cd "D:\sem 3\hackathon\OLYMPIQ"
+```powershell
+cd C:\Users\HP\Desktop\hackathon\OLYMIPIQ
 ```
 
-2. **Install dependencies**
-```bash
-pip install -r requirements.txt
+Start the one-command launcher:
+
+```powershell
+.\run_olympiq.bat
 ```
 
-3. **Obtain the dataset**
-The app looks for data in the following order:
-- `data/olympics.csv` (recommended)
-- `OLYMPIQ_DATA_PATH` environment variable
-- `data_loader` module
+The script installs Python 3.12 with the Python Launcher if needed, creates a separate `.venv-olympiq312` environment inside this repository so it leaves any existing environment alone, installs the four direct app dependencies, and starts Streamlit. Version ranges let pip choose compatible releases instead of pinning unnecessary transitive packages. Streamlit prints a local address, usually `http://localhost:8501`, and opens it in your browser. To run both the Streamlit analytics dashboard and React landing frontend together, run `run_olympiq_full.bat`. To run Streamlit manually after setup: `.venv-olympiq312\Scripts\python.exe -m streamlit run app.py`.
 
-If not present, download from:
-https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv
+## Historical dataset
 
-Place it as `data/olympics.csv`.
+The repository's `data/olympics_raw.csv` is the real athlete-event table from the Kaggle **120 years of Olympic history: athletes and results** dataset, reproduced and documented by TidyTuesday. It has 271,116 source rows and covers Athens 1896 through Rio 2016. The source data was scraped from Sports Reference in 2018; it is not an official IOC live feed and does not include later Games.
 
-4. **Run the application**
-```bash
-streamlit run app.py
+Source and field descriptions:
+
+- [TidyTuesday source notes and data dictionary](https://github.com/rfordatascience/tidytuesday/blob/main/data/2021/2021-07-27/readme.md)
+- [Original Kaggle dataset](https://www.kaggle.com/datasets/heesoo37/120-years-of-olympic-history-athletes-and-results)
+
+The source notes identify Kaggle and Sports Reference provenance but do not state a clear redistribution licence for the original data. Keep attribution with the dataset and check the current Kaggle/source terms before republishing or redistributing it. The CSV is ignored by Git so this repository does not upload the historical file by default.
+
+If the CSV is missing, download `athlete_events.csv` from the Kaggle page, place it at `data/olympics_raw.csv`, or set `OLYMPIQ_DATA_PATH` to its full path. The loader does not create substitute or synthetic records.
+
+### Source columns
+
+`ID`, `Name`, `Sex`, `Age`, `Height`, `Weight`, `Team`, `NOC`, `Games`, `Year`, `Season`, `City`, `Sport`, `Event`, and `Medal`. A blank medal means the athlete did not win a medal. Missing athlete height, weight, or age values remain missing; these variables are not used in the forecast.
+
+### Counting and historical limitations
+
+- The source contains one row per athlete-event entry, so a team award can appear once for each teammate. Medal summaries de-duplicate awards by country, edition, event, and medal colour rather than treating every athlete row as a separate medal.
+- Every country edition with participation remains in the panel, including zero-medal results.
+- Historical NOC codes (for example URS, GDR, TCH, and YUG) are not silently reassigned to modern successor countries.
+- Sports, event programmes, participation, and medal opportunities change across eras. Historical totals are not perfectly comparable.
+- Source results stop at 2016. The dashboard does not claim live or real-time medal data.
+
+## Dashboard sections
+
+- **Welcome and Overview** — project entry point, source coverage, and an India historical-result spotlight.
+- **Historical Trends, Country Analysis, and Sport Analysis** — interactive season, edition, nation, and sport comparisons.
+- **Performance Trajectory, Breakthrough Watch, and Sport Opportunity** — descriptive country insights with calculation explanations.
+- **Predictive Analytics and Prediction vs Actual** — a transparent hurdle model, chronological holdout folds, baseline metrics, and uncertainty notes.
+- **Dataset & Methodology** — data definitions, quality notes, the model card, and metric descriptions.
+
+## Forecast method
+
+`prediction.py` builds a country-edition panel including zero-medal participants and validates with earlier Olympic editions before each test edition. It compares predictions with persistence and recent-mean baselines. The hurdle model estimates the chance of any medal and the expected count conditional on medalling. Results are estimates, not exact medal counts; host and historical trends are associations and do not prove causation.
+
+## Useful checks
+
+```powershell
+python -m py_compile app.py data_loader.py analysis.py prediction.py
+python -m unittest -v test_prediction
 ```
 
-The app will open in your default browser at `http://localhost:8501`.
-
-## Project Structure
-
-```
-OLYMPIQ/
-├── app.py              # Main Streamlit dashboard
-├── data_loader.py      # Data loading and cleaning
-├── analysis.py         # Analysis functions and insights
-├── prediction.py       # Predictive modeling with validation
-├── requirements.txt    # Dependencies
-├── README.md          # This file
-├── .gitignore         # Git ignore rules
-└── data/              # Data directory (gitignored)
-    └── olympics.csv   # Historical dataset
-```
-
-## Methodology Notes
-
-- **No data leakage**: Predictions use chronological validation - models are trained only on past editions
-- **Transparent modeling**: Simple, interpretable approaches (weighted recent performance, host effects where applicable)
-- **Uncertainty acknowledged**: All forecasts are estimates with clear limitations
-- **Zero-medal handling**: Countries with no medals are appropriately handled without fabricating results
-- **Baseline comparison**: Model performance compared against simple historical baselines
-
-## Limitations
-
-- Data only goes to 2016; recent Games may not be fully represented
-- Country codes/names may change over time (political changes)
-- Some historical records may be incomplete
-- Sport program changes affect cross-edition comparisons
-- Predictions cannot account for unforeseen events (injuries, boycotts, etc.)
-- Association does not imply causation
-
-## License & Disclaimer
-
-This project is for educational/hackathon purposes. Olympic trademarks are not used inappropriately. All data used is from publicly accessible sources.
+The authentic-data integration test uses the dataset discovered by `data_loader.py`; the rest of the test suite uses small fixtures to check data handling and chronological logic.

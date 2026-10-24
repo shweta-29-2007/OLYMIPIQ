@@ -32,27 +32,34 @@ class OlympicDataLoader:
         self.country_medals = None
         
     def _find_data_path(self, data_path: Optional[str]) -> Optional[str]:
-        """Find the data file in common locations."""
-        if data_path and os.path.exists(data_path):
-            return data_path
+        """Find the authentic CSV, checking explicit paths before repo defaults.
+
+        Paths in the project are resolved from this file, not the shell's current
+        directory. This lets ``streamlit run app.py`` work when launched from a
+        VS Code terminal or a shortcut that starts in another folder.
+        """
+        if data_path and Path(data_path).expanduser().is_file():
+            return str(Path(data_path).expanduser().resolve())
         
         # Check environment variable
         env_path = os.environ.get('OLYMPIQ_DATA_PATH')
-        if env_path and os.path.exists(env_path):
-            return env_path
+        if env_path and Path(env_path).expanduser().is_file():
+            return str(Path(env_path).expanduser().resolve())
         
         # Check common locations
+        project_dir = Path(__file__).resolve().parent
         possible_paths = [
-            'data/olympics.csv',
-            'olympics.csv',
-            '../data/olympics.csv',
-            'data/athlete_events.csv',
-            'athlete_events.csv'
+            project_dir / 'data' / 'olympics_raw.csv',
+            project_dir / 'data' / 'olympics.csv',
+            project_dir / 'olympics.csv',
+            project_dir.parent / 'data' / 'olympics.csv',
+            project_dir / 'data' / 'athlete_events.csv',
+            project_dir / 'athlete_events.csv',
         ]
-        
+
         for path in possible_paths:
-            if os.path.exists(path):
-                return path
+            if path.is_file():
+                return str(path.resolve())
         
         return None
     
@@ -73,7 +80,7 @@ class OlympicDataLoader:
             raise FileNotFoundError(
                 "Olympic data file not found. Please download the dataset:\n"
                 "1. From TidyTuesday: https://raw.githubusercontent.com/rfordatascience/tidytuesday/master/data/2021/2021-07-27/olympics.csv\n"
-                "2. Place it as 'data/olympics.csv' in the project directory\n"
+                "2. Save it as 'data/olympics.csv' in the project directory\n"
                 "3. Or set OLYMPIQ_DATA_PATH environment variable"
             )
         
