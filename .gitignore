@@ -1,0 +1,36 @@
+# Data files (may have restrictions)
+data/
+*.csv
+*.parquet
+*.json
+*.xlsx
+*.xls
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Streamlit
+.streamlit/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Credentials
+*.env
+.env
+secrets.toml
