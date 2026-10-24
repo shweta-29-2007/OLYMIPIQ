@@ -1,0 +1,17 @@
+# Local Olympic records may be large and have separate redistribution terms.
+data/*.csv
+!data/.gitkeep
+
+# Python environments and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.streamlit/secrets.toml
+
+# Local editor / OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
